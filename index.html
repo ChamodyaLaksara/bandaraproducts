@@ -42,67 +42,97 @@ const API = "https://bandaraproducts-production.up.railway.app";
 
 let products = [];
 let cart = [];
-let editId = null;
 
-// LOAD PRODUCTS
-function loadProducts() {
-  fetch(`${API}/products`)
-    .then(res => res.json())
-    .then(data => {
-      products = data;
-      const list = document.getElementById("productList");
-      const select = document.getElementById("productSelect");
+// ✅ LOAD PRODUCTS (Improved)
+async function loadProducts() {
+  try {
+    console.log("Loading products...");
 
-      list.innerHTML = "";
-      select.innerHTML = "";
+    const res = await fetch(`${API}/products`);
 
-      data.forEach(p => {
-        list.innerHTML += `
-          <li>
-            ${p.name} - Rs.${p.selling_price}
-            <button onclick="deleteProduct(${p.id})">Delete</button>
-          </li>
-        `;
+    if (!res.ok) {
+      throw new Error("Server not responding");
+    }
 
-        select.innerHTML += `<option value="${p.id}">${p.name}</option>`;
-      });
-    })
-    .catch(() => alert("❌ Backend connection failed"));
+    const data = await res.json();
+
+    products = data;
+
+    const list = document.getElementById("productList");
+    const select = document.getElementById("productSelect");
+
+    list.innerHTML = "";
+    select.innerHTML = "";
+
+    data.forEach(p => {
+      list.innerHTML += `
+        <li>
+          ${p.name} - Rs.${p.selling_price}
+          <button onclick="deleteProduct(${p.id})">Delete</button>
+        </li>
+      `;
+
+      select.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+    });
+
+    console.log("Products loaded successfully");
+
+  } catch (err) {
+    console.error("ERROR:", err);
+
+    alert("❌ Backend connection failed!\n\n👉 Check:\n1. Railway server running?\n2. API URL correct?\n3. Database connected?");
+  }
 }
 
-// ADD PRODUCT
-function addProduct() {
-  const data = {
-    name: name.value,
-    buying_price: buying_price.value,
-    selling_price: selling_price.value,
-    stock_qty: stock_qty.value
-  };
+// ✅ ADD PRODUCT
+async function addProduct() {
+  try {
+    const data = {
+      name: name.value,
+      buying_price: buying_price.value,
+      selling_price: selling_price.value,
+      stock_qty: stock_qty.value
+    };
 
-  fetch(`${API}/add-product`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data)
-  })
-  .then(res => res.text())
-  .then(msg => {
+    const res = await fetch(`${API}/add-product`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+
+    const msg = await res.text();
+
     alert(msg);
     loadProducts();
-  });
+
+  } catch (err) {
+    console.error(err);
+    alert("❌ Failed to add product");
+  }
 }
 
-// DELETE
-function deleteProduct(id) {
-  fetch(`${API}/delete-product/${id}`, { method: "DELETE" })
-  .then(() => loadProducts());
+// ✅ DELETE PRODUCT
+async function deleteProduct(id) {
+  try {
+    await fetch(`${API}/delete-product/${id}`, { method: "DELETE" });
+    loadProducts();
+  } catch (err) {
+    console.error(err);
+    alert("❌ Delete failed");
+  }
 }
 
-// ADD TO CART
+// ✅ ADD TO CART
 function addToCart() {
   const id = productSelect.value;
   const qtyVal = parseInt(qty.value);
 
   const product = products.find(p => p.id == id);
+
+  if (!product) {
+    alert("❌ Product not found");
+    return;
+  }
 
   cart.push({
     product_id: id,
@@ -114,7 +144,7 @@ function addToCart() {
   renderCart();
 }
 
-// RENDER CART
+// ✅ RENDER CART
 function renderCart() {
   let total = 0;
 
@@ -125,25 +155,44 @@ function renderCart() {
   document.getElementById("total").innerText = total.toFixed(2);
 }
 
-// CHECKOUT
-function checkout() {
-  fetch(`${API}/create-sale`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      shop_id: 1,
-      items: cart
-    })
-  })
-  .then(res => res.text())
-  .then(msg => {
+// ✅ CHECKOUT
+async function checkout() {
+  try {
+    if (cart.length === 0) {
+      alert("⚠️ Cart is empty");
+      return;
+    }
+
+    const res = await fetch(`${API}/create-sale`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        shop_id: 1,
+        items: cart
+      })
+    });
+
+    const msg = await res.text();
+
     alert(msg);
+
     cart = [];
     renderCart();
     loadProducts();
-  });
+
+  } catch (err) {
+    console.error(err);
+    alert("❌ Checkout failed");
+  }
 }
 
+// 🔥 Auto reload if Railway sleep
+setInterval(() => {
+  console.log("Pinging server...");
+  fetch(`${API}/products`).catch(()=>{});
+}, 30000);
+
+// INIT
 loadProducts();
 
 </script>

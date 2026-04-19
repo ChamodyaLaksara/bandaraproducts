@@ -1,22 +1,37 @@
 const express = require("express");
-const db = require("./db");
+const mysql = require("mysql2");
 const cors = require("cors");
 
 const app = express();
 
-// ✅ CORS FIX (VERY IMPORTANT)
-app.use(cors({
-  origin: "*", // 🔥 allow Vercel
-}));
-
+// ✅ CORS (Vercel + all origins)
+app.use(cors());
 app.use(express.json());
 
-// 🏠 Test Route
+/* =========================
+   ✅ DATABASE CONNECTION (IMPORTANT)
+   ========================= */
+
+const db = mysql.createPool({
+  host: process.env.DB_HOST,       // 🔥 Railway / Cloud DB
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
+});
+
+/* =========================
+   🏠 TEST ROUTE
+   ========================= */
 app.get("/", (req, res) => {
   res.send("API Running 🚀");
 });
 
-// ➕ Add Product
+/* =========================
+   ➕ ADD PRODUCT
+   ========================= */
 app.post("/add-product", (req, res) => {
   const { name, buying_price, selling_price, stock_qty } = req.body;
 
@@ -32,30 +47,34 @@ app.post("/add-product", (req, res) => {
   db.query(sql, [name, buying_price, selling_price, stock_qty], (err) => {
     if (err) {
       console.log("DB ERROR:", err);
-      return res.status(500).send(err.message);
+      return res.status(500).send("Database error ❌");
     }
 
     res.send("Product Added ✅");
   });
 });
 
-// 📋 Get Products
+/* =========================
+   📋 GET PRODUCTS
+   ========================= */
 app.get("/products", (req, res) => {
   db.query("SELECT * FROM products ORDER BY id DESC", (err, result) => {
     if (err) {
       console.log("FETCH ERROR:", err);
-      return res.status(500).send("Error fetching products");
+      return res.status(500).send("Error fetching products ❌");
     }
 
     res.json(result);
   });
 });
 
-// 🗑️ Delete Product
+/* =========================
+   🗑️ DELETE PRODUCT
+   ========================= */
 app.delete("/delete-product/:id", (req, res) => {
   const id = req.params.id;
 
-  db.query("DELETE FROM products WHERE id = ?", [id], (err, result) => {
+  db.query("DELETE FROM products WHERE id = ?", [id], (err) => {
     if (err) {
       console.log("DELETE ERROR:", err);
       return res.status(500).send("Delete failed ❌");
@@ -65,7 +84,9 @@ app.delete("/delete-product/:id", (req, res) => {
   });
 });
 
-// ✏️ Update Product
+/* =========================
+   ✏️ UPDATE PRODUCT
+   ========================= */
 app.put("/update-product/:id", (req, res) => {
   const id = req.params.id;
   const { name, buying_price, selling_price, stock_qty } = req.body;
@@ -86,7 +107,9 @@ app.put("/update-product/:id", (req, res) => {
   });
 });
 
-// 🛒 CREATE SALE
+/* =========================
+   🛒 CREATE SALE
+   ========================= */
 app.post("/create-sale", (req, res) => {
   const { shop_id, items } = req.body;
 
@@ -96,10 +119,13 @@ app.post("/create-sale", (req, res) => {
   const total = items.reduce((sum, i) => sum + i.qty * i.price, 0);
 
   db.getConnection((err, connection) => {
-    if (err) return res.status(500).send(err);
+    if (err) {
+      console.log("CONNECTION ERROR:", err);
+      return res.status(500).send("DB connection failed ❌");
+    }
 
     connection.beginTransaction(err => {
-      if (err) return res.status(500).send(err);
+      if (err) return res.status(500).send("Transaction error ❌");
 
       connection.query(
         "INSERT INTO sales (shop_id, total, date) VALUES (?, ?, NOW())",
@@ -152,12 +178,16 @@ app.post("/create-sale", (req, res) => {
   });
 });
 
-// ⚠️ 404
+/* =========================
+   ⚠️ 404
+   ========================= */
 app.use((req, res) => {
   res.status(404).send("Route not found ❌");
 });
 
-// 🚀 START SERVER (Railway compatible)
+/* =========================
+   🚀 START SERVER
+   ========================= */
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
