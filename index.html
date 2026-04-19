@@ -1,868 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>Bandara POS | Modern Billing Suite</title>
-  <!-- Google Fonts: Inter & Space Grotesk for modern touch -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
-  <!-- Font Awesome 6 (free) -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <!-- jsPDF library -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bandara POS</title>
 
-    body {
-      background: radial-gradient(circle at 10% 20%, rgba(226, 240, 250, 1) 0%, rgba(196, 220, 240, 1) 100%);
-      font-family: 'Inter', 'Space Grotesk', sans-serif;
-      padding: 28px 24px;
-      color: #0a2b33;
-    }
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-    /* main container */
-    .dashboard {
-      max-width: 1440px;
-      margin: 0 auto;
-    }
-
-    /* Glassmorphism header */
-    .brand-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      margin-bottom: 32px;
-      background: rgba(255, 255, 255, 0.55);
-      backdrop-filter: blur(12px);
-      padding: 14px 28px;
-      border-radius: 80px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.6);
-      border: 1px solid rgba(255,255,255,0.8);
-    }
-
-    .logo-area {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
-    .logo-icon {
-      background: #1a4d5f;
-      width: 48px;
-      height: 48px;
-      border-radius: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 10px 15px -6px rgba(0,0,0,0.2);
-    }
-
-    .logo-icon i {
-      font-size: 1.8rem;
-      color: #ffdd99;
-    }
-
-    .brand-text h1 {
-      font-size: 1.9rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      background: linear-gradient(125deg, #1c5f72, #0e3e4b);
-      background-clip: text;
-      -webkit-background-clip: text;
-      color: transparent;
-    }
-
-    .brand-text span {
-      font-size: 0.75rem;
-      font-weight: 500;
-      color: #2c6e82;
-      letter-spacing: 0.3px;
-    }
-
-    .live-badge {
-      background: rgba(26, 77, 95, 0.2);
-      backdrop-filter: blur(8px);
-      padding: 8px 20px;
-      border-radius: 60px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: #0f4c5e;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      border: 1px solid rgba(255,255,240,0.7);
-    }
-
-    /* modern card style */
-    .card-modern {
-      background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(4px);
-      border-radius: 40px;
-      box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0,0,0,0.02);
-      padding: 28px 32px;
-      margin-bottom: 32px;
-      transition: all 0.25s ease;
-      border: 1px solid rgba(255,255,255,0.7);
-    }
-
-    .card-title {
-      font-size: 1.5rem;
-      font-weight: 700;
-      margin-bottom: 28px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      background: linear-gradient(135deg, #1f5e72, #2c7f98);
-      background-clip: text;
-      -webkit-background-clip: text;
-      color: transparent;
-      border-left: 4px solid #ffc857;
-      padding-left: 18px;
-    }
-
-    .form-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      align-items: flex-end;
-      margin-bottom: 28px;
-    }
-
-    .input-group {
-      flex: 1 1 210px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .input-group label {
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      color: #1b6b82;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    input, select {
-      padding: 14px 18px;
-      border-radius: 28px;
-      border: 1.5px solid #e2edf2;
-      background: white;
-      font-family: 'Inter', monospace;
-      font-size: 0.9rem;
-      transition: 0.2s;
-      outline: none;
-      width: 100%;
-      font-weight: 500;
-    }
-
-    input:focus, select:focus {
-      border-color: #ffb347;
-      box-shadow: 0 0 0 3px rgba(255, 180, 71, 0.2);
-    }
-
-    button {
-      background: #1f6e86;
-      border: none;
-      padding: 12px 26px;
-      border-radius: 40px;
-      font-weight: 600;
-      font-size: 0.85rem;
-      font-family: 'Inter', sans-serif;
-      color: white;
-      cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.08);
-    }
-
-    button i {
-      font-size: 1rem;
-    }
-
-    button:hover {
-      background: #0f556b;
-      transform: translateY(-2px);
-      box-shadow: 0 14px 22px -10px rgba(0, 0, 0, 0.2);
-    }
-
-    .btn-outline {
-      background: #f0f6fa;
-      color: #1b5e72;
-      border: 1px solid #cde3ec;
-      box-shadow: none;
-    }
-
-    .btn-outline:hover {
-      background: #e4f0f5;
-      transform: translateY(-1px);
-    }
-
-    /* product catalog list */
-    .product-grid {
-      margin-top: 16px;
-    }
-
-    .product-items {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .product-items li {
-      background: white;
-      border-radius: 60px;
-      padding: 10px 18px 10px 24px;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      transition: all 0.2s;
-      border: 1px solid #eef3f7;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-    }
-
-    .product-info {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-      align-items: baseline;
-    }
-
-    .product-name {
-      font-weight: 800;
-      color: #144d5e;
-      font-size: 1rem;
-    }
-
-    .product-price {
-      background: #fff0df;
-      padding: 4px 14px;
-      border-radius: 30px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: #c45f1b;
-    }
-
-    .stock-badge {
-      font-size: 0.7rem;
-      padding: 4px 12px;
-      border-radius: 30px;
-      background: #eef2f5;
-      font-weight: 600;
-    }
-
-    .low-stock-item {
-      border-left: 5px solid #ff6b6b;
-      background: #fff9f0;
-    }
-
-    .action-buttons {
-      display: flex;
-      gap: 10px;
-    }
-
-    .action-buttons button {
-      padding: 6px 16px;
-      background: #f1f5f9;
-      color: #1f4e5e;
-      box-shadow: none;
-      font-size: 0.7rem;
-    }
-
-    .cart-table-wrapper {
-      overflow-x: auto;
-      margin: 24px 0 20px;
-      border-radius: 28px;
-      background: #ffffffcc;
-      padding: 0;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.85rem;
-    }
-
-    th {
-      text-align: left;
-      padding: 18px 14px;
-      background: #eaf4f8;
-      font-weight: 700;
-      color: #134b5c;
-    }
-
-    td {
-      padding: 16px 14px;
-      border-bottom: 1px solid #e7edf2;
-    }
-
-    .total-card {
-      background: linear-gradient(105deg, #123e4b 0%, #1f5e72 100%);
-      border-radius: 32px;
-      padding: 20px 28px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-top: 20px;
-      box-shadow: 0 12px 20px -12px rgba(0,0,0,0.3);
-    }
-
-    .total-amount {
-      font-size: 2.2rem;
-      font-weight: 800;
-      background: #ffdf9c;
-      display: inline-block;
-      padding: 6px 28px;
-      border-radius: 60px;
-      color: #1a4f60;
-      letter-spacing: -0.5px;
-    }
-
-    .checkout-btn {
-      background: #ffc857;
-      color: #1c3f4a;
-      font-size: 1rem;
-      font-weight: 800;
-      padding: 12px 34px;
-      box-shadow: 0 6px 14px rgba(0,0,0,0.2);
-    }
-
-    .checkout-btn:hover {
-      background: #ffdd88;
-      transform: scale(1.02);
-    }
-
-    .empty-cart-msg {
-      text-align: center;
-      padding: 40px;
-      color: #6f8f9c;
-      font-weight: 500;
-    }
-
-    /* Responsive */
-    @media (max-width: 780px) {
-      body {
-        padding: 16px;
-      }
-      .card-modern {
-        padding: 20px;
-      }
-      .product-items li {
-        flex-direction: column;
-        align-items: stretch;
-        border-radius: 32px;
-      }
-      .action-buttons {
-        justify-content: flex-end;
-      }
-      .form-grid {
-        flex-direction: column;
-      }
-      .total-amount {
-        font-size: 1.6rem;
-      }
-    }
-
-    /* micro-interactions */
-    .quantity-control {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .qty-btn {
-      background: #eef3f8;
-      padding: 4px 12px;
-      border-radius: 40px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.1s;
-      border: none;
-      font-size: 0.8rem;
-    }
-    .qty-btn:hover {
-      background: #d9e4ec;
-    }
-    .remove-item {
-      background: none;
-      color: #d9534f;
-      padding: 4px 10px;
-      box-shadow: none;
-    }
-    .remove-item:hover {
-      background: #ffe6e5;
-      color: #b33;
-    }
-
-    footer {
-      text-align: center;
-      font-size: 0.7rem;
-      margin-top: 20px;
-      opacity: 0.7;
-    }
-  </style>
+<style>
+body { font-family: Inter; padding:20px; background:#eef6fa; }
+button { padding:10px 20px; cursor:pointer; }
+</style>
 </head>
+
 <body>
-<div class="dashboard">
-  <!-- Glass header -->
-  <div class="brand-header">
-    <div class="logo-area">
-      <div class="logo-icon"><i class="fas fa-cash-register"></i></div>
-      <div class="brand-text">
-        <h1>Bandara <span style="font-weight: 600;">POS</span></h1>
-        <span>Smart Inventory · Real-time Billing</span>
-      </div>
-    </div>
-    <div class="live-badge">
-      <i class="fas fa-circle" style="font-size: 0.6rem; color: #2ecc71;"></i> Live Sync
-      <i class="fas fa-bolt" style="margin-left: 6px;"></i>
-    </div>
-  </div>
 
-  <!-- Product Inventory Card -->
-  <div class="card-modern">
-    <div class="card-title">
-      <i class="fas fa-cubes" style="color:#ffa559;"></i>
-      <span>Product Vault</span>
-    </div>
-    <div class="form-grid">
-      <div class="input-group">
-        <label><i class="fas fa-tag"></i> Product name</label>
-        <input type="text" id="name" placeholder=" Chili powder">
-      </div>
-      <div class="input-group">
-        <label><i class="fas fa-chart-line"></i> Buying (Rs)</label>
-        <input type="number" id="buying_price" placeholder="Cost price">
-      </div>
-      <div class="input-group">
-        <label><i class="fas fa-tags"></i> Selling (Rs)</label>
-        <input type="number" id="selling_price" placeholder="Sale price">
-      </div>
-      <div class="input-group">
-        <label><i class="fas fa-cubes"></i> Stock Qty</label>
-        <input type="number" id="stock_qty" placeholder="Units">
-      </div>
-      <div style="display: flex; gap: 12px;">
-        <button id="mainBtn" onclick="addProduct()"><i class="fas fa-save"></i> Save item</button>
-        <button type="button" onclick="resetForm()" class="btn-outline"><i class="fas fa-undo-alt"></i> Reset</button>
-      </div>
-    </div>
-    <div class="product-grid">
-      <div style="padding: 0 6px 12px 6px; font-weight: 600; color:#1e6b7c;"><i class="fas fa-archive"></i> Live catalog</div>
-      <ul id="productList" class="product-items"></ul>
-    </div>
-  </div>
+<h2>Bandara POS</h2>
 
-  <!-- Billing Engine Card -->
-  <div class="card-modern">
-    <div class="card-title">
-      <i class="fas fa-receipt" style="color:#ffa559;"></i>
-      <span>Smart Checkout</span>
-    </div>
-    <div class="form-grid" style="align-items: flex-end;">
-      <div class="input-group">
-        <label><i class="fas fa-box-open"></i> Choose product</label>
-        <select id="productSelect"></select>
-      </div>
-      <div class="input-group">
-        <label><i class="fas fa-sort-numeric-up"></i> Quantity</label>
-        <input type="number" id="qty" placeholder="Qty" value="1" min="1">
-      </div>
-      <button onclick="addToCart()"><i class="fas fa-cart-plus"></i> Add to bill</button>
-    </div>
+<input id="name" placeholder="Product name">
+<input id="buying_price" placeholder="Buying price">
+<input id="selling_price" placeholder="Selling price">
+<input id="stock_qty" placeholder="Stock">
 
-    <div class="cart-table-wrapper">
-      <table>
-        <thead>
-          <tr><th>Item</th><th>Unit price (Rs)</th><th>Quantity</th><th>Total (Rs)</th></tr>
-        </thead>
-        <tbody id="cartBody">
-          <tr><td colspan="4" class="empty-cart-msg"><i class="fas fa-shopping-bag"></i> Cart is empty — add products</td></tr>
-        </tbody>
-      </table>
-    </div>
+<button onclick="addProduct()">Save</button>
 
-    <div class="total-card">
-      <span style="font-weight: 600; letter-spacing: 0.5px;"><i class="fas fa-coins"></i> GRAND TOTAL</span>
-      <div style="display: flex; gap: 24px; align-items: center; flex-wrap: wrap;">
-        <span class="total-amount" id="total">0.00</span>
-        <button onclick="checkout()" class="checkout-btn"><i class="fas fa-check-double"></i> Complete Sale</button>
-      </div>
-    </div>
-  </div>
-  <footer>⚡ Real-time backend sync | Bandara Products © 2026</footer>
-</div>
+<hr>
+
+<select id="productSelect"></select>
+<input id="qty" value="1">
+<button onclick="addToCart()">Add to Cart</button>
+
+<ul id="productList"></ul>
+
+<h3>Total: Rs. <span id="total">0</span></h3>
+<button onclick="checkout()">Checkout</button>
 
 <script>
-  // ---------- GLOBAL STATE ----------
-  let editId = null;
-  let products = [];      // full product catalog from server
-  let cart = [];          // { product_id, name, price, qty }
 
-  // ---------- Helper: Render product list & dropdown (modern UI)
-  function loadProducts() {
-    fetch("http://localhost:5000/products")
-      .then(res => {
-        if (!res.ok) throw new Error("Network response error");
-        return res.json();
-      })
-      .then(data => {
-        products = data || [];
-        const listContainer = document.getElementById("productList");
-        const selectEl = document.getElementById("productSelect");
-        listContainer.innerHTML = "";
-        selectEl.innerHTML = "";
+const API = "https://bandaraproducts-production.up.railway.app";
 
-        if (!products.length) {
-          listContainer.innerHTML = `<div style="padding: 28px; text-align:center; background:#f9fcff; border-radius: 28px;"><i class="fas fa-database"></i> No products — add your first item above ✨</div>`;
-          const emptyOpt = document.createElement("option");
-          emptyOpt.text = "— no products available —";
-          emptyOpt.disabled = true;
-          selectEl.appendChild(emptyOpt);
-          return;
-        }
+let products = [];
+let cart = [];
+let editId = null;
 
-        products.forEach(p => {
-          const isLow = p.stock_qty < 10;
-          const li = document.createElement("li");
-          if (isLow) li.classList.add("low-stock-item");
-          li.innerHTML = `
-            <div class="product-info">
-              <span class="product-name"><i class="fas fa-cube"></i> ${escapeHtml(p.name)}</span>
-              <span class="product-price">Rs. ${Number(p.selling_price).toFixed(2)}</span>
-              <span class="stock-badge ${isLow ? 'low-stock-text' : ''}" style="${isLow ? 'background:#ffe0e0; color:#bc3900;' : ''}">
-                <i class="fas fa-boxes"></i> ${p.stock_qty} ${isLow ? '⚠️ low' : 'units'}
-              </span>
-            </div>
-            <div class="action-buttons">
-              <button onclick="editProduct(${p.id}, '${escapeHtml(p.name)}', ${p.buying_price}, ${p.selling_price}, ${p.stock_qty})">
-                <i class="fas fa-pen"></i> Edit
-              </button>
-              <button onclick="deleteProduct(${p.id})">
-                <i class="fas fa-trash-can"></i> Delete
-              </button>
-            </div>
-          `;
-          listContainer.appendChild(li);
+// LOAD PRODUCTS
+function loadProducts() {
+  fetch(`${API}/products`)
+    .then(res => res.json())
+    .then(data => {
+      products = data;
+      const list = document.getElementById("productList");
+      const select = document.getElementById("productSelect");
 
-          const option = document.createElement("option");
-          option.value = p.id;
-          option.textContent = `${p.name}  •  Rs.${Number(p.selling_price).toFixed(2)}  (stock: ${p.stock_qty})`;
-          selectEl.appendChild(option);
-        });
-      })
-      .catch(err => {
-        console.error("Load error:", err);
-        alert("⚠️ Backend connection failed. Ensure server runs on http://localhost:5000");
+      list.innerHTML = "";
+      select.innerHTML = "";
+
+      data.forEach(p => {
+        list.innerHTML += `
+          <li>
+            ${p.name} - Rs.${p.selling_price}
+            <button onclick="deleteProduct(${p.id})">Delete</button>
+          </li>
+        `;
+
+        select.innerHTML += `<option value="${p.id}">${p.name}</option>`;
       });
-  }
-
-  function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-      if (m === '&') return '&amp;';
-      if (m === '<') return '&lt;';
-      if (m === '>') return '&gt;';
-      return m;
-    });
-  }
-
-  // Add / Update product
-  function addProduct() {
-    const name = document.getElementById("name").value.trim();
-    const buying_price = document.getElementById("buying_price").value;
-    const selling_price = document.getElementById("selling_price").value;
-    const stock_qty = document.getElementById("stock_qty").value;
-
-    if (!name) return alert("Product name required");
-    if (buying_price === "" || selling_price === "" || stock_qty === "") return alert("Fill all fields");
-    const data = {
-      name,
-      buying_price: Number(buying_price),
-      selling_price: Number(selling_price),
-      stock_qty: Number(stock_qty)
-    };
-
-    const url = editId ? `http://localhost:5000/update-product/${editId}` : "http://localhost:5000/add-product";
-    const method = editId ? "PUT" : "POST";
-
-    fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
     })
-      .then(res => {
-        if (!res.ok) throw new Error("Server error");
-        return res.text();
-      })
-      .then(msg => {
-        alert(msg);
-        resetForm();
-        loadProducts();
-        renderCart();    // update cart prices consistency (product might have changed price, but we keep old price in cart as per billing ethics)
-      })
-      .catch(err => alert("Error: " + err.message));
-  }
+    .catch(() => alert("❌ Backend connection failed"));
+}
 
-  function editProduct(id, name, buying_price, selling_price, stock_qty) {
-    document.getElementById("name").value = name;
-    document.getElementById("buying_price").value = buying_price;
-    document.getElementById("selling_price").value = selling_price;
-    document.getElementById("stock_qty").value = stock_qty;
-    editId = id;
-    const mainBtn = document.getElementById("mainBtn");
-    mainBtn.innerHTML = '<i class="fas fa-pen-alt"></i> Update Product';
-    mainBtn.style.background = "#e6a017";
-    mainBtn.style.color = "#1e2f3c";
-  }
+// ADD PRODUCT
+function addProduct() {
+  const data = {
+    name: name.value,
+    buying_price: buying_price.value,
+    selling_price: selling_price.value,
+    stock_qty: stock_qty.value
+  };
 
-  function deleteProduct(id) {
-    if (!confirm("Delete product? This will also remove from cart if present.")) return;
-    fetch(`http://localhost:5000/delete-product/${id}`, { method: "DELETE" })
-      .then(() => {
-        cart = cart.filter(item => item.product_id != id);
-        renderCart();
-        loadProducts();
-      })
-      .catch(err => alert("Delete failed: " + err));
-  }
+  fetch(`${API}/add-product`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  })
+  .then(res => res.text())
+  .then(msg => {
+    alert(msg);
+    loadProducts();
+  });
+}
 
-  function resetForm() {
-    editId = null;
-    document.getElementById("name").value = "";
-    document.getElementById("buying_price").value = "";
-    document.getElementById("selling_price").value = "";
-    document.getElementById("stock_qty").value = "";
-    const mainBtn = document.getElementById("mainBtn");
-    mainBtn.innerHTML = '<i class="fas fa-save"></i> Save product';
-    mainBtn.style.background = "";
-    mainBtn.style.color = "";
-  }
+// DELETE
+function deleteProduct(id) {
+  fetch(`${API}/delete-product/${id}`, { method: "DELETE" })
+  .then(() => loadProducts());
+}
 
-  // Add to cart with stock validation
-  function addToCart() {
-    const productId = document.getElementById("productSelect").value;
-    let qtyVal = document.getElementById("qty").value;
-    const qty = parseInt(qtyVal);
-    if (!productId) return alert("Select a product from catalog");
-    if (isNaN(qty) || qty <= 0) return alert("Valid quantity required (minimum 1)");
+// ADD TO CART
+function addToCart() {
+  const id = productSelect.value;
+  const qtyVal = parseInt(qty.value);
 
-    const product = products.find(p => p.id == productId);
-    if (!product) return alert("Product missing from inventory");
+  const product = products.find(p => p.id == id);
 
-    if (product.stock_qty < qty) {
-      alert(`Insufficient stock! Only ${product.stock_qty} left of ${product.name}.`);
-      return;
-    }
+  cart.push({
+    product_id: id,
+    name: product.name,
+    price: product.selling_price,
+    qty: qtyVal
+  });
 
-    const existingIndex = cart.findIndex(item => item.product_id == product.id);
-    if (existingIndex !== -1) {
-      const newQty = cart[existingIndex].qty + qty;
-      if (product.stock_qty < newQty) {
-        alert(`Cannot add ${qty} more. Max allowed stock for ${product.name} is ${product.stock_qty}`);
-        return;
-      }
-      cart[existingIndex].qty = newQty;
-    } else {
-      cart.push({
-        product_id: product.id,
-        name: product.name,
-        price: Number(product.selling_price),
-        qty: qty
-      });
-    }
-    renderCart();
-    document.getElementById("qty").value = "1";
-  }
+  renderCart();
+}
 
-  // Render cart table with modern quantity controls
-  function renderCart() {
-    const tbody = document.getElementById("cartBody");
-    tbody.innerHTML = "";
-    let totalSum = 0;
+// RENDER CART
+function renderCart() {
+  let total = 0;
 
-    if (cart.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="4" class="empty-cart-msg"><i class="fas fa-receipt"></i> Cart is empty — add items</td></tr>`;
-      document.getElementById("total").innerText = "0.00";
-      return;
-    }
+  cart.forEach(item => {
+    total += item.price * item.qty;
+  });
 
-    cart.forEach((item, idx) => {
-      const lineTotal = item.price * item.qty;
-      totalSum += lineTotal;
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td style="font-weight:600;">${escapeHtml(item.name)}</td>
-        <td>Rs. ${item.price.toFixed(2)}</td>
-        <td>
-          <div class="quantity-control">
-            <button class="qty-btn" onclick="updateCartQty(${idx}, ${item.qty - 1})"><i class="fas fa-minus"></i></button>
-            <span style="min-width: 40px; text-align:center; font-weight:600;">${item.qty}</span>
-            <button class="qty-btn" onclick="updateCartQty(${idx}, ${item.qty + 1})"><i class="fas fa-plus"></i></button>
-            <button class="qty-btn remove-item" onclick="removeCartItem(${idx})"><i class="fas fa-trash-alt"></i></button>
-          </div>
-        </td>
-        <td style="font-weight:700;">Rs. ${lineTotal.toFixed(2)}</td>
-      `;
-      tbody.appendChild(row);
-    });
-    document.getElementById("total").innerText = totalSum.toFixed(2);
-  }
+  document.getElementById("total").innerText = total.toFixed(2);
+}
 
-  function updateCartQty(index, newQty) {
-    if (index < 0 || index >= cart.length) return;
-    if (newQty <= 0) {
-      removeCartItem(index);
-      return;
-    }
-    const item = cart[index];
-    const product = products.find(p => p.id == item.product_id);
-    if (product && newQty > product.stock_qty) {
-      alert(`Stock limited! Only ${product.stock_qty} available.`);
-      return;
-    }
-    cart[index].qty = newQty;
-    renderCart();
-  }
-
-  function removeCartItem(index) {
-    cart.splice(index, 1);
-    renderCart();
-  }
-
-  // Enhanced checkout with PDF invoice generation (modern design)
-  function checkout() {
-    if (cart.length === 0) {
-      alert("Cart is empty. Add products to proceed.");
-      return;
-    }
-    // double-check stock before final sale
-    for (let item of cart) {
-      const product = products.find(p => p.id == item.product_id);
-      if (!product) {
-        alert(`Product ${item.name} no longer exists`);
-        return;
-      }
-      if (product.stock_qty < item.qty) {
-        alert(`Not enough stock for ${item.name}. Available: ${product.stock_qty}`);
-        return;
-      }
-    }
-
-    fetch("http://localhost:5000/create-sale", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        shop_id: 1,
-        items: cart.map(i => ({ product_id: i.product_id, qty: i.qty, price: i.price }))
-      })
+// CHECKOUT
+function checkout() {
+  fetch(`${API}/create-sale`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      shop_id: 1,
+      items: cart
     })
-      .then(res => res.text())
-      .then(msg => {
-        alert(msg + " 🧾 Invoice ready!");
-        const totalVal = document.getElementById("total").innerText;
-        generateModernInvoice(cart, totalVal);
-        cart = [];
-        renderCart();
-        loadProducts();   // refresh stocks
-      })
-      .catch(err => alert("Checkout error: " + err.message));
-  }
+  })
+  .then(res => res.text())
+  .then(msg => {
+    alert(msg);
+    cart = [];
+    renderCart();
+    loadProducts();
+  });
+}
 
-  // PDF generator with contemporary bandara branding
-  function generateModernInvoice(cart, total) {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    const invoiceNo = "BAN-" + Date.now().toString().slice(-8);
-    let y = 18;
+loadProducts();
 
-    // header gradient effect using rectangle
-    doc.setFillColor(31, 94, 114);
-    doc.rect(0, 0, 210, 40, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(22);
-    doc.setFont("helvetica", "bold");
-    doc.text("BANDARA PRODUCTS", 20, 22);
-    doc.setFontSize(9);
-    doc.text("Premium Retail Solutions", 20, 32);
-    doc.setTextColor(40, 40, 40);
-    y = 50;
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(80, 80, 80);
-    doc.setFontSize(10);
-    doc.text(`Invoice No: ${invoiceNo}`, 20, y);
-    doc.text(`Date: ${new Date().toLocaleString()}`, 130, y);
-    y += 10;
-    doc.text("Reg: W/GG/9/2689  |  Enderamulla, Govinna, Horana", 20, y);
-    y += 6;
-    doc.text("Tel: +94 77 350 3669  |  sales@bandaraproducts.com", 20, y);
-    y += 12;
-    doc.setDrawColor(200, 200, 200);
-    doc.line(20, y, 190, y);
-    y += 8;
-
-    doc.setFont("helvetica", "bold");
-    doc.text("Item", 22, y);
-    doc.text("Qty", 100, y);
-    doc.text("Unit Price (Rs)", 130, y);
-    doc.text("Total (Rs)", 168, y);
-    y += 6;
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9.5);
-
-    cart.forEach((item, idx) => {
-      const lineTotal = item.price * item.qty;
-      doc.text(item.name.length > 20 ? item.name.substring(0, 18) + ".." : item.name, 22, y);
-      doc.text(item.qty.toString(), 102, y);
-      doc.text(item.price.toFixed(2), 132, y);
-      doc.text(lineTotal.toFixed(2), 170, y);
-      y += 7;
-      if (y > 260) {
-        doc.addPage();
-        y = 20;
-      }
-    });
-    y += 8;
-    doc.line(20, y, 190, y);
-    y += 6;
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(13);
-    doc.text(`GRAND TOTAL: Rs. ${total}`, 140, y);
-    y += 12;
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "italic");
-    doc.text("Thank you for shopping with Bandara! Smart billing experience.", 20, y);
-    y += 5;
-    doc.text("This is a system generated tax invoice.", 20, y);
-    doc.save(`Bandara_Invoice_${invoiceNo}.pdf`);
-  }
-
-  // bind global functions
-  window.addProduct = addProduct;
-  window.editProduct = editProduct;
-  window.deleteProduct = deleteProduct;
-  window.resetForm = resetForm;
-  window.addToCart = addToCart;
-  window.checkout = checkout;
-  window.updateCartQty = updateCartQty;
-  window.removeCartItem = removeCartItem;
-
-  // Initial load
-  loadProducts();
-  document.getElementById("qty").value = 1;
 </script>
+
 </body>
 </html>
